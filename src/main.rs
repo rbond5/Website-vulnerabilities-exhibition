@@ -36,9 +36,9 @@ async fn main() -> std::io::Result<()> {
             // Home page placeholder - eventually this will link to exhibits.
             .route("/", web::get().to(|| async { HttpResponse::Ok().body("Hello World") }))
             // Placeholder routes for the three exhibits
-            .route("/login", web::get().to(|| async { HttpResponse::Ok().body("Login Placeholder") }))
-            .route("/ddos", web::get().to(|| async { HttpResponse::Ok().body("DDoS Placeholder") }))
-            .route("/firewall", web::get().to(|| async { HttpResponse::Ok().body("Firewall Placeholder") }))
+            .service(web::resource("/SQLi").route(web::get().to(exhibits::sql_injection::sqli_handle)).route(web::post().to(exhibits::sql_injection::sqli_check)))
+            .service(web::resource("/DOS").route(web::get().to(exhibits::dos_detection::dos_handle)))
+            .service(web::resource("/Firewall").route(web::get().to(exhibits::firewall::firewall_handle)))
     })
     .bind(bind_address)?
     .run()
