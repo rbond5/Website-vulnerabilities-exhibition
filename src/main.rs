@@ -1,6 +1,4 @@
-//#![feature(collections)]
-
-use actix_web::{App, HttpServer, middleware::Logger};
+use actix_web::{App, HttpServer, HttpResponse, web, middleware::Logger};
 use dotenv::dotenv;
 //use std::env;
 use utilities::ThreadPool;
@@ -18,38 +16,31 @@ mod middleware;
 mod exhibits;
 mod utilities;
 
-fn main() {
-    let listener = TcpListener::bind("127.0.0.1:7878").unwrap();
-    let pool = ThreadPool::new(4);
+#[actix_web::main]
+async fn main() -> std::io::Result<()> {
+    dotenv().ok(); // Loading environment variables (Database, IP, Port)
+    env_logger::init(); // Ensure logs from Logger middleware are displayed to monitor application
 
-    for stream in listener.incoming() {
-        let stream = stream.unwrap();
+    // Loading host IP and Port from .env file. If it fails, set to localhost IP and standard backup http port
+    let host = env::var("SERVER_HOST").unwrap_or_else(|_| "127.0.0.1".to_string());
+    let port = env::var("SERVER_PORT").unwrap_or_else(|_| "8080".to_string());
+    let bind_address = format!("{}:{}", host, port);
 
-        pool.execute(|| {
-            handle_connection(stream);
-        });
-    }
+    // Log message to confirm server is running
+    println!("Starting Actix Web server at http://{}/", bind_address);
 
-}
-
-fn handle_connection(mut stream: TcpStream) {
-    let buf_reader = BufReader::new(&mut stream);
-    let request_line = buf_reader.lines().next().unwrap().unwrap();
-
-    let (status_line, filename) = match &request_line[..] {
-        "GET / HTTP/1.1" => ("HTTP/1.1 200 OK", "hello.html"),
-        "GET /sleep HTTP/1.1" => {
-            thread::sleep(Duration::from_secs(5));
-            ("HTTP/1.1 200 OK", "hello.html")
-        }
-        _ => ("HTTP/1.1 404 NOT FOUND", "404.html"),
-    };
-
-    let contents = fs::read_to_string(filename).unwrap();
-    let length = contents.len();
-
-    let response =
-        format!("{status_line}\r\nContent-Length: {length}\r\n\r\n{contents}");
-
-    stream.write_all(response.as_bytes()).unwrap();
+    // Placeholder webserver for development
+    HttpServer::new(|| {
+        App::new()
+            .wrap(Logger::default())
+            // Endpoint placeholder - eventually this will link to exhibits.
+            .route("/", web::get().to(|| async { HttpResponse::Ok().body("Hello World") }))
+            // Placeholder routes for the three exhibits
+            .route("/login", web::get().to(|| async { HttpResponse::Ok().body("Login Placeholder") }))
+            .route("/ddos", web::get().to(|| async { HttpResponse::Ok().body("DDoS Placeholder") }))
+            .route("/firewall", web::get().to(|| async { HttpResponse::Ok().body("Firewall Placeholder") }))
+    })
+    .bind(bind_address)?
+    .run()
+    .await
 }
