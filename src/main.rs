@@ -12,7 +12,7 @@ use std::{
 };
 
 mod db;
-mod middleware;
+mod tools;
 mod exhibits;
 mod utilities;
 
@@ -33,7 +33,7 @@ async fn main() -> std::io::Result<()> {
     HttpServer::new(|| {
         App::new()
             .wrap(Logger::default())
-            // Endpoint placeholder - eventually this will link to exhibits.
+            // Home page placeholder - eventually this will link to exhibits.
             .route("/", web::get().to(|| async { HttpResponse::Ok().body("Hello World") }))
             // Placeholder routes for the three exhibits
             .route("/login", web::get().to(|| async { HttpResponse::Ok().body("Login Placeholder") }))
