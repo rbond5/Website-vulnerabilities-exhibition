@@ -1,7 +1,6 @@
 use actix_web::{App, HttpServer, HttpResponse, web, middleware::Logger};
 use dotenv::dotenv;
 //use std::env;
-use utilities::ThreadPool;
 use std::{
     fs,
     io::{prelude::*, BufReader},
@@ -14,7 +13,6 @@ use std::{
 mod db;
 mod tools;
 mod exhibits;
-mod utilities;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -33,9 +31,9 @@ async fn main() -> std::io::Result<()> {
     HttpServer::new(|| {
         App::new()
             .wrap(Logger::default())
-            // Home page placeholder - eventually this will link to exhibits.
+            // Home page placeholder - eventually this will load homepage
             .route("/", web::get().to(|| async { HttpResponse::Ok().body("Hello World") }))
-            // Placeholder routes for the three exhibits
+            // Routes for the three exhibits
             .service(web::resource("/SQLi").route(web::get().to(exhibits::sql_injection::sqli_handle)).route(web::post().to(exhibits::sql_injection::sqli_check)))
             .service(web::resource("/DOS").route(web::get().to(exhibits::dos_detection::dos_handle)))
             .service(web::resource("/Firewall").route(web::get().to(exhibits::firewall::firewall_handle)))

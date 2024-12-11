@@ -4,10 +4,11 @@ use sqlx::MySql;
 use serde;
 
 pub async fn sqli_handle() -> impl Responder {
-    let login_page = "login_page.html"; // this will become a path to the login page
+    let login_page = "login_page.html"; // This will become a path to the login page
     HttpResponse::Ok().content_type("text/html").body(login_page)
 }
 
+//We store the login information in a struct for easier use
 #[derive(serde::Deserialize)]
 pub struct login_form {
     username: String,
