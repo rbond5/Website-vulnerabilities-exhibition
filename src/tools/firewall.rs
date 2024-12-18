@@ -1,6 +1,6 @@
 use actix_web::{dev::{Service, ServiceRequest, ServiceResponse, Transform}, Error};
 //use futures_util::future::{ok, Ready, LocalBoxFuture};
-use std::net::SocketAddr;
+use std::net::{IpAddr, SocketAddr};
 use std::sync::{Arc, RwLock};
 use std::collections::HashSet;
 
@@ -17,15 +17,15 @@ impl Firewall {
 
     //Constructor creates a new struct with empty hashmaps
     pub fn new_firewall_ruleset() -> Self {
-        Firewall {
+        Self {
             blocked_ip: Arc::new(RwLock::new(HashSet::new())),
             blocked_ports: Arc::new(RwLock::new(HashSet::new())),
         }
     }
 
     //Add a given IP String to ruleset
-    pub fn block_new_ip(&self, address: &SocketAddr) {
-        let ip_string = address.ip().to_string();
+    pub fn block_new_ip(&self, address: IpAddr) {
+        let ip_string = address.to_string();
         {
             let mut ip_table = self.blocked_ip.write().unwrap();
             ip_table.insert(ip_string);
@@ -33,8 +33,8 @@ impl Firewall {
     }
 
     //Remove a given IP String from ruleset
-    pub fn unblock_ip(&self, address: &SocketAddr) {
-        let ip_string = address.ip().to_string();
+    pub fn unblock_ip(&self, address: IpAddr) {
+        let ip_string = address.to_string();
         {
             let mut ip_table = self.blocked_ip.write().unwrap();
             ip_table.remove(&ip_string);
