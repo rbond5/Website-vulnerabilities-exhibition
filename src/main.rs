@@ -1,18 +1,27 @@
 use actix_web::{App, HttpServer, HttpResponse, web, middleware::Logger};
+use actix_web::http::header;
+use actix_web::dev::{Service, Transform};
+use actix_web::HttpMessage;
 use dotenv::dotenv;
-//use std::env;
+use futures_util::future::{ok, Ready};
+use env_logger;
 use std::{
-    fs,
-    io::{prelude::*, BufReader},
-    net::{TcpListener, TcpStream},
-    thread,
-    time::Duration,
     env,
+    net::SocketAddr,
+    sync::Arc,
+    time::Duration,
 };
+use std::task::{Context, Poll};
 
-mod db;
+// Local modules (make sure they exist as `src/exhibits/mod.rs` and `src/tools/mod.rs` or files)
 mod tools;
 mod exhibits;
+mod middleware;
+
+// Using local structs/functions from your modules
+use crate::tools::firewall::Firewall;
+use crate::tools::rate_limit::RateLimiter;
+use crate::middleware::MyMiddleware;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -27,10 +36,18 @@ async fn main() -> std::io::Result<()> {
     // Log message to confirm server is running
     println!("Starting Actix Web server at http://{}/", bind_address);
 
+    //Create a new firewall + rate limiter instance
+    let firewall = Arc::new(Firewall::new_firewall_ruleset());
+    let rate_limiter = Arc::new(RateLimiter::new_rate_limiter(firewall.clone()));
+
     // Placeholder webserver for development
-    HttpServer::new(|| {
+    HttpServer::new(move || {
         App::new()
-            .wrap(Logger::default())
+            .app_data(firewall.clone())
+            .app_data(rate_limiter.clone())
+            .wrap(MyMiddleware::new(firewall.clone(), rate_limiter.clone()))
+            //.wrap(Logger::default())
+
             // Home page placeholder - eventually this will load homepage
             .route("/", web::get().to(|| async { HttpResponse::Ok().body("Hello World") }))
             // Routes for the three exhibits

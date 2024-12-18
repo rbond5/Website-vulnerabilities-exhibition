@@ -14,6 +14,7 @@ dotenv = "0.15"
 env_logger = "0.11.5"
 log = "0.4"
 idna = "=1.0.3"
+futures-util = "0.3.31"
 
 # Database and SQL handling
 sqlx = { version = "0.8", features = ["runtime-tokio", "mysql"] }

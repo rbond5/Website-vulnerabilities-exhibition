@@ -1,12 +1,11 @@
 use std::collections::HashMap;
 use std::net::IpAddr;
-use std::ptr::null;
 use std::sync::{Arc, RwLock};
 use std::time::{Duration, Instant};
 use crate::tools::firewall::Firewall;
 
 
-struct ip_stats {
+struct IpStats {
     //How many requests an ip has made in the last second/minute
     second_count: u32,
     minute_count: u32,
@@ -15,12 +14,13 @@ struct ip_stats {
     last_minute_reset: Instant,
 }
 
-pub struct rate_limiter {
+#[derive(Clone)]
+pub struct RateLimiter {
     firewall: Arc<Firewall>,
-    data: Arc<RwLock<HashMap<IpAddr, ip_stats>>>,
+    data: Arc<RwLock<HashMap<IpAddr, IpStats>>>,
 }
 
-impl rate_limiter {
+impl RateLimiter {
     //Constructor builds new rate_limiter with firewall rules being passed in
     pub fn new_rate_limiter(firewall: Arc<Firewall>) -> Self {
         Self {
@@ -33,7 +33,7 @@ impl rate_limiter {
         let now = Instant::now();
         let mut rates_table = self.data.write().unwrap();
 
-        let stat_tracker = rates_table.entry(ip).or_insert(ip_stats {
+        let stat_tracker = rates_table.entry(ip).or_insert(IpStats {
             second_count: 0,
             minute_count: 0,
             last_second_reset: now,

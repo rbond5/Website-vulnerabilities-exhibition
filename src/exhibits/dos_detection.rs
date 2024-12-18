@@ -1,5 +1,5 @@
 use actix_web::{get, HttpRequest, HttpResponse, Responder};
-use crate::tools::rate_limit::{self, dos_detected};
+use crate::tools::rate_limit;
 
 pub async fn dos_handle(req: HttpRequest) -> impl Responder {
     // We store the attacker IP as the one that made the request because attacks will be coming from the user
