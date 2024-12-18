@@ -76,7 +76,6 @@ where
                     rate_limiter.record_request(ip);
                     let address = std::net::SocketAddr::new(ip, 0);
                     if firewall.check_if_allowed(&address) == false {
-                        // Convert to BoxBody before returning
                         let response = HttpResponse::Forbidden()
                             .body("Your IP has been blocked by this application's firewall")
                             .map_into_boxed_body();
