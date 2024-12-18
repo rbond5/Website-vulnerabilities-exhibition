@@ -2,9 +2,10 @@ use actix_web::{get, post, web, HttpResponse, Responder};
 use sqlx::Pool;
 use sqlx::MySql;
 use serde;
+use std::fs;
 
 pub async fn sqli_handle() -> impl Responder {
-    let login_page = "login_page.html"; // This will become a path to the login page
+    let login_page = fs::read_to_string("login_page.html").expect("Something went wrong reading the file"); // This will become a path to the login page
     HttpResponse::Ok().content_type("text/html").body(login_page)
 }
 
